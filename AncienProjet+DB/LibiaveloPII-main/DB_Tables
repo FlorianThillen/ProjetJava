@@ -1,0 +1,95 @@
+CREATE DATABASE velodb;
+
+USE velodb;
+
+CREATE TABLE Card (
+    clientNumber INT(6) AUTO_INCREMENT PRIMARY KEY
+);
+
+CREATE TABLE Bike (
+    serialNumber NUMERIC(6) PRIMARY KEY
+);
+
+CREATE TABLE Address (
+    postalCode NUMERIC(4) NOT NULL,
+    street VARCHAR(50) NOT NULL,
+    streetNumber NUMERIC(3) NOT NULL,
+    locality VARCHAR(30) NOT NULL,
+    CONSTRAINT PK_Address PRIMARY KEY (postalCode, street, streetNumber, locality)
+);
+
+CREATE TABLE Station (
+    stationNumber NUMERIC(3) PRIMARY KEY,
+    stationName VARCHAR(30) NOT NULL,
+    bikesRemaining NUMERIC(2) NOT NULL,
+    postalCode NUMERIC(4) NOT NULL,
+    street VARCHAR(50) NOT NULL,
+    streetNumber NUMERIC(3) NOT NULL,
+    locality VARCHAR(30) NOT NULL,
+    CONSTRAINT FK_Station_Address FOREIGN KEY (postalCode, street, streetNumber, locality) 
+        REFERENCES Address(postalCode, street, streetNumber, locality)
+);
+
+CREATE TABLE Member (
+    nationalNumber VARCHAR(11) PRIMARY KEY,
+    lastName VARCHAR(30) NOT NULL,
+    firstName VARCHAR(30) NOT NULL,
+    birthDate DATE NOT NULL,
+    email VARCHAR(50) UNIQUE,
+    gotDiscount BIT NOT NULL,
+    phoneNumber VARCHAR(20),
+    gender VARCHAR(1),
+    postalCode NUMERIC(4) NOT NULL,
+    street VARCHAR(50) NOT NULL,
+    streetNumber NUMERIC(3) NOT NULL,
+    locality VARCHAR(30) NOT NULL,
+    clientNumber INT(6) NOT NULL,
+    CONSTRAINT checkGender CHECK (gender IN ('m','f','x')),
+    CONSTRAINT FK_Member_Address FOREIGN KEY (postalCode, street, streetNumber, locality)
+        REFERENCES Address(postalCode, street, streetNumber, locality),
+    CONSTRAINT FK_Member_Card FOREIGN KEY (clientNumber)
+        REFERENCES Card(clientNumber)
+);
+
+CREATE TABLE Subscription (
+    userId NUMERIC(20) PRIMARY KEY,
+    price NUMERIC(5,2) NOT NULL,
+    date DATE NOT NULL,
+    cautionPayed BIT NOT NULL,
+    subscriptionPayed BIT NOT NULL,
+    clientNumber INT(6) NOT NULL,
+    CONSTRAINT FK_Subscription_Card FOREIGN KEY (clientNumber)
+        REFERENCES Card(clientNumber)
+);
+
+CREATE TABLE Rental (
+    startDate DATE NOT NULL,
+    returnDate DATE NOT NULL,
+    clientNumber INT(6) NOT NULL,
+    serialNumber NUMERIC(6) NOT NULL,
+    stationNumber NUMERIC(3) NOT NULL,
+    CONSTRAINT PK_Rental PRIMARY KEY (startDate, clientNumber, serialNumber, stationNumber),
+    CONSTRAINT FK_Rental_Card FOREIGN KEY (clientNumber)
+        REFERENCES Card(clientNumber),
+    CONSTRAINT FK_Rental_Bike FOREIGN KEY (serialNumber)
+        REFERENCES Bike(serialNumber),
+    CONSTRAINT FK_Rental_Station FOREIGN KEY (stationNumber)
+        REFERENCES Station(stationNumber)
+);
+
+-- Insertion des données pour la table Card
+INSERT INTO Card (clientNumber) VALUES (1), (2), (3), (4), (5);
+
+-- Insertion des données pour la table Bike
+INSERT INTO Bike (serialNumber) VALUES (100001), (100002), (100003), (100004), (100005);
+
+-- Insertion des données pour la table Address (pour les stations et les membres)
+INSERT INTO Address (postalCode, street, streetNumber, locality) VALUES
+(1000, 'Main Street', 1, 'CityA'),
+(1001, 'Second Street', 12, 'CityB'),
+(1002, 'Third Avenue', 25, 'CityC'),
+(1003, 'Fourth Lane', 33, 'CityD'),
+(1004, 'Fifth Boulevard', 44, 'CityE'),
+(1005, 'Sixth Road', 55, 'CityF'),
+(1006, 'Seventh Alley', 66, 'CityG'),
+(1007, 'Eighth Drive', 77, 'CityH');
